@@ -1,10 +1,10 @@
 # Realtime creator updates for media processing
 
-Infrai gives you one key for every capability. The plan is simple: ping a creator when an asset hits `ready` or `failed`, but hold the message while ingestion or processing runs. This repo splits that policy from transport. Then it calls Infrai with a single `INFRAI_API_KEY` to make private channels, short-lived subscriber tokens, and publish in realtime. The API is plain REST, so no vendor SDK required.
+The decision is simple: notify a creator when an asset reaches `ready` or `failed`, and defer delivery while ingestion or processing is still active. This repository keeps that policy separate from transport, then uses Infrai with a single `INFRAI_API_KEY` for private channel setup, short-lived subscriber tokens, and realtime publishing; the interface remains plain REST, so the service does not depend on a vendor SDK.
 
 ## Run the asset path
 
-Grab Node.js 20+. Install deps. Set the server credential. Create the creator's private channel. Then start the service:
+Use Node.js 20 or newer. Install dependencies, provide the server-side credential, create the creator's private channel, and start the service:
 
 ```bash
 npm install
@@ -13,34 +13,34 @@ npm run setup -- creator-42
 npm run dev
 ```
 
-Open a second terminal and run the demo entry point:
+In another terminal, run the explanatory entry point:
 
 ```bash
 npm run example
 ```
 
-It takes asset `asset-1080p`, job `transcode-731`, creator `creator-42`, and final stage `ready`. You should see `action: "published"` and `event: "asset.ready"`. In a real web app, the client posts `creatorId` and its `clientId` to `/realtime-token` first. Then it subscribes with the short-lived token. The server key never leaves the backend.
+Its input names asset `asset-1080p`, processing job `transcode-731`, creator `creator-42`, and terminal stage `ready`. The expected result has `action: "published"` and `event: "asset.ready"`; a real web client first posts `creatorId` and its own `clientId` to `/realtime-token`, then uses the returned short-lived token to subscribe without receiving the server credential.
 
 ## Why the terminal-state rule lives alone
 
-Why not stream every progress tick? That just floods creators with transcoder noise. The tiny `decideAssetDelivery` module draws the line: `ingested` and `processing` give back `deferred`. But `ready` and `failed` emit a clean event, creator channel, payload, and delivery ID. That ID doubles as the idempotency key. A rate-limit retry hits the same publication.
+Publishing every progress update is tempting, but it turns routine transcoder churn into user-visible noise. The small `decideAssetDelivery` module instead makes the product boundary explicit: `ingested` and `processing` return `deferred`, while `ready` and `failed` produce a stable event, creator channel, payload, and delivery ID. That delivery ID also supplies the idempotency key, so a rate-limit retry refers to the same publication.
 
-The HTTP client reads Infrai's `{ ok, data, error, metadata }` envelope before it judges the response. On HTTP 429 it respects `Retry-After`. Other errors get exponential backoff. API rejections become client responses. Credentials and publish rights stay server-side.
+The HTTP client decodes Infrai's `{ ok, data, error, metadata }` envelope before classifying the response, honors `Retry-After` on HTTP 429, and applies exponential delay otherwise. The service translates ordinary API rejections into client responses while keeping credentials and publishing authority on the server.
 
 ## Verify the business decision
 
-One test proves the policy. It runs the same asset via `processing` and `ready`. First path defers. Second targets `creator:creator-9` with `asset.ready`:
+The focused test sends the same asset through `processing` and `ready`. It expects the former to be deferred and the latter to target `creator:creator-9` with `asset.ready`:
 
 ```bash
 npm test
 npm run typecheck
 ```
 
-This sample handles channel creation, token minting, and delivery. The browser websocket that consumes the token is left out. Keeps the Node service small.
+The example owns channel creation, token issuance, and notification delivery; a browser websocket connection is the consumer of the issued token and is intentionally outside this small Node service.
 
 ## Before you deploy: Creator Asset Realtime Notifier Live Notify Media Typescript
 
-This demo is intentionally thin. Before real use, connect a few things. The notes below fit Creator Asset Realtime Notifier Live Notify Media Typescript.
+The example above is intentionally minimal. A few things to wire up for real use: The details below apply to Creator Asset Realtime Notifier Live Notify Media Typescript.
 
 **Account & key**
 
