@@ -48,3 +48,7 @@ The example above is intentionally minimal. A few things to wire up for real use
 
 **Creator Asset Realtime Notifier Live Notify Media Typescript: Realtime**
 - **Creator Asset Realtime Notifier Live Notify Media Typescript:** Mint **short-lived client tokens server-side** (`POST /v1/realtime/token/issue`); never ship your project key to the browser.
+
+## Further reading
+
+- [A 4-State Playbook for Testing Realtime Connection Drain in Shared Kanban Boards](docs/a-4-state-playbook-for-testing-realtime-connectio-3fyvkb.md)
