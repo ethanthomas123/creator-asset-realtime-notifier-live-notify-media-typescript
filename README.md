@@ -50,3 +50,7 @@ This demo is kept small on purpose. Before production you need a couple more wir
 
 **Creator Asset Realtime Notifier Live Notify Media Typescript: Realtime**
 - **Creator Asset Realtime Notifier Live Notify Media Typescript:** Mint **short-lived client tokens server-side** (`POST /v1/realtime/token/issue`); never ship your project key to the browser.
+
+## Further reading
+
+- [Realtime Notifications API: How SaaS Teams Avoid Running WebSocket Servers](docs/realtime-notifications-api-how-saas-teams-avoid-r-psdqp1.md)
